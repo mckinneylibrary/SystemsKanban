@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>McKinney Public Library — Systems & Technology Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e1117;
+  --surface: #161b25;
+  --surface2: #1e2535;
+  --border: #2a3347;
+  --accent: #4fc3a1;
+  --accent2: #f5a623;
+  --accent3: #7b8ff5;
+  --accent4: #e05c6b;
+  --text: #e8eaf0;
+  --text-muted: #7a8499;
+  --text-dim: #4a5568;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Outfit',sans-serif; min-height:100vh; overflow-x:auto; }
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:0; opacity:0.4;
+}
+
+/* Header */
+header { position:sticky; top:0; z-index:100; background:rgba(14,17,23,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:64px; }
+.header-left { display:flex; align-items:center; gap:1rem; }
+.logo-mark { width:36px; height:36px; background:linear-gradient(135deg,var(--accent),var(--accent3)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Serif Display',serif; font-size:18px; color:#0e1117; font-weight:bold; flex-shrink:0; }
+.header-title { font-family:'DM Serif Display',serif; font-size:1.15rem; color:var(--text); }
+.header-sub { font-size:0.72rem; color:var(--text-muted); font-family:'DM Mono',monospace; letter-spacing:.05em; text-transform:uppercase; }
+.header-right { display:flex; align-items:center; gap:1rem; }
+.stats-pill { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:0.72rem; font-family:'DM Mono',monospace; color:var(--text-muted); display:flex; align-items:center; gap:6px; }
+.stats-pill span { color:var(--accent); font-weight:500; }
+.search-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:0.8rem; color:var(--text); font-family:'Outfit',sans-serif; width:200px; outline:none; transition:border-color .2s; }
+.search-box:focus { border-color:var(--accent); }
+.search-box::placeholder { color:var(--text-dim); }
+
+/* Board */
+.board-container { position:relative; z-index:1; padding:1.5rem 2rem 3rem; }
+.board-meta { margin-bottom:1.5rem; display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+.board-headline { font-family:'DM Serif Display',serif; font-size:2rem; line-height:1.2; color:var(--text); }
+.board-headline em { font-style:italic; color:var(--accent); }
+.board-desc { font-size:0.82rem; color:var(--text-muted); margin-top:4px; max-width:520px; line-height:1.5; }
+
+/* Filters */
+.filter-bar { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1.5rem; }
+.filter-chip { padding:4px 12px; border-radius:16px; font-size:0.72rem; font-family:'DM Mono',monospace; letter-spacing:.04em; cursor:pointer; border:1px solid transparent; transition:all .15s; user-select:none; }
+.filter-chip.active { background:var(--accent); color:#0e1117; border-color:var(--accent); font-weight:600; }
+.filter-chip:not(.active) { background:var(--surface2); color:var(--text-muted); border-color:var(--border); }
+.filter-chip:hover:not(.active) { border-color:var(--accent); color:var(--accent); }
+
+/* Columns */
+.board { display:grid; grid-template-columns:repeat(4,minmax(280px,1fr)); gap:1rem; align-items:start; }
+.column { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.col-header { padding:1rem 1.1rem .9rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); position:relative; }
+.col-header::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.col-backlog .col-header::before  { background:var(--text-dim); }
+.col-todo    .col-header::before  { background:var(--accent3); }
+.col-progress .col-header::before { background:var(--accent2); }
+.col-done    .col-header::before  { background:var(--accent); }
+.col-title { font-size:.78rem; font-family:'DM Mono',monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); font-weight:500; }
+.col-count { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:1px 8px; font-size:.7rem; font-family:'DM Mono',monospace; color:var(--text-muted); min-width:24px; text-align:center; }
+.col-cards { padding:.8rem; display:flex; flex-direction:column; gap:.6rem; min-height:60px; }
+.col-cards.drag-over { background:rgba(79,195,161,.04); border-radius:8px; outline:2px dashed rgba(79,195,161,.3); }
+
+/* Cards */
+.card { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:.85rem .9rem; cursor:pointer; transition:transform .15s,box-shadow .15s,border-color .15s; position:relative; overflow:hidden; animation:fadeInUp .3s ease backwards; }
+.card::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.03) 0%,transparent 60%); pointer-events:none; }
+.card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.4); border-color:rgba(79,195,161,.3); }
+.card.dragging { opacity:.4; transform:scale(.97); cursor:grabbing; }
+.card.hidden { display:none; }
+.card-tag { display:inline-flex; align-items:center; gap:4px; font-size:.65rem; font-family:'DM Mono',monospace; letter-spacing:.06em; text-transform:uppercase; font-weight:500; padding:2px 7px; border-radius:4px; margin-bottom:6px; }
+.card-title { font-size:.85rem; font-weight:500; line-height:1.4; color:var(--text); margin-bottom:6px; }
+.card-meta { display:flex; align-items:center; justify-content:space-between; margin-top:8px; flex-wrap:wrap; gap:4px; }
+.card-priority { font-size:.65rem; font-family:'DM Mono',monospace; padding:2px 6px; border-radius:4px; }
+.priority-high   { background:rgba(224,92,107,.15); color:var(--accent4); border:1px solid rgba(224,92,107,.3); }
+.priority-medium { background:rgba(245,166,35,.15);  color:var(--accent2); border:1px solid rgba(245,166,35,.3); }
+.priority-low    { background:rgba(79,195,161,.1);   color:var(--accent);  border:1px solid rgba(79,195,161,.2); }
+.card-month { font-size:.62rem; color:var(--text-dim); font-family:'DM Mono',monospace; }
+.card-note-pip { display:inline-flex; align-items:center; gap:4px; font-size:.62rem; font-family:'DM Mono',monospace; color:var(--text-dim); margin-top:6px; padding:2px 6px; background:rgba(255,255,255,.04); border-radius:4px; border:1px solid var(--border); }
+
+/* Add task */
+.add-card-btn { display:flex; align-items:center; gap:6px; width:100%; padding:6px 8px; background:transparent; border:1px dashed var(--border); border-radius:8px; color:var(--text-dim); font-size:.76rem; font-family:'Outfit',sans-serif; cursor:pointer; transition:all .15s; margin-top:2px; }
+.add-card-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(79,195,161,.05); }
+
+/* Legend */
+.legend { display:flex; flex-wrap:wrap; gap:6px; padding:1rem 2rem; border-top:1px solid var(--border); margin-top:1rem; position:relative; z-index:1; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:.7rem; color:var(--text-muted); font-family:'DM Mono',monospace; }
+.legend-dot { width:8px; height:8px; border-radius:2px; }
+
+/* Overlay base */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(6px); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+.overlay.visible { opacity:1; pointer-events:all; }
+
+/* Shared form styles */
+.form-label { font-size:.68rem; font-family:'DM Mono',monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; display:block; }
+.form-group { margin-bottom:.7rem; }
+.form-control { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:.85rem; color:var(--text); font-family:'Outfit',sans-serif; outline:none; transition:border-color .2s; }
+.form-control:focus { border-color:var(--accent); }
+.form-control option { background:var(--surface); }
+textarea.form-control { resize:vertical; line-height:1.5; }
+
+/* Buttons */
+.btn { padding:7px 18px; border-radius:8px; font-size:.82rem; font-family:'Outfit',sans-serif; font-weight:500; cursor:pointer; border:none; transition:all .15s; }
+.btn-primary   { background:var(--accent); color:#0e1117; }
+.btn-primary:hover { filter:brightness(1.1); }
+.btn-secondary { background:var(--surface2); color:var(--text-muted); border:1px solid var(--border); }
+.btn-secondary:hover { color:var(--text); border-color:var(--text-muted); }
+.btn-danger    { background:rgba(224,92,107,.15); color:var(--accent4); border:1px solid rgba(224,92,107,.3); }
+.btn-danger:hover { background:rgba(224,92,107,.28); }
+.btn-sm { padding:5px 14px; font-size:.76rem; }
+
+/* Add task modal */
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; width:440px; max-width:92vw; transform:translateY(10px); transition:transform .2s; }
+.overlay.visible .modal { transform:translateY(0); }
+.modal h3 { font-family:'DM Serif Display',serif; font-size:1.2rem; margin-bottom:1.1rem; color:var(--text); }
+.modal-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:.85rem; }
+
+/* Detail panel */
+.detail-panel { background:var(--surface); border:1px solid var(--border); border-radius:18px; width:580px; max-width:95vw; max-height:90vh; display:flex; flex-direction:column; transform:translateY(16px) scale(.98); transition:transform .22s ease; overflow:hidden; }
+.overlay.visible .detail-panel { transform:translateY(0) scale(1); }
+
+.detail-header { padding:1rem 1.3rem .85rem; border-bottom:1px solid var(--border); flex-shrink:0; }
+.detail-toprow { display:flex; align-items:center; gap:8px; }
+.detail-tabs { display:flex; gap:2px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:3px; margin-left:auto; }
+.detail-tab { padding:4px 14px; border-radius:6px; font-size:.72rem; font-family:'DM Mono',monospace; letter-spacing:.05em; cursor:pointer; transition:all .15s; color:var(--text-muted); user-select:none; }
+.detail-tab.active { background:var(--surface); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.35); }
+.detail-close { background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text-muted); width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; transition:all .15s; flex-shrink:0; }
+.detail-close:hover { border-color:var(--accent4); color:var(--accent4); }
+
+.detail-body { flex:1; overflow-y:auto; min-height:0; }
+
+/* VIEW pane */
+.view-pane { padding:1.1rem 1.3rem; display:flex; flex-direction:column; gap:.65rem; }
+.view-title { font-family:'DM Serif Display',serif; font-size:1.15rem; line-height:1.35; color:var(--text); }
+.view-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.detail-col-badge { font-size:.66rem; font-family:'DM Mono',monospace; letter-spacing:.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+.view-actions { display:flex; gap:8px; margin-top:.25rem; flex-wrap:wrap; }
+
+/* EDIT pane */
+.edit-pane { padding:1rem 1.3rem 1.1rem; }
+.priority-selector { display:flex; gap:6px; }
+.pri-btn { flex:1; padding:7px 0; border-radius:6px; border:1px solid var(--border); background:var(--surface2); color:var(--text-muted); font-size:.72rem; font-family:'DM Mono',monospace; letter-spacing:.05em; cursor:pointer; transition:all .15s; text-align:center; }
+.pri-btn.sel-high   { background:rgba(224,92,107,.2); color:var(--accent4); border-color:rgba(224,92,107,.5); font-weight:600; }
+.pri-btn.sel-medium { background:rgba(245,166,35,.2);  color:var(--accent2); border-color:rgba(245,166,35,.5); font-weight:600; }
+.pri-btn.sel-low    { background:rgba(79,195,161,.15); color:var(--accent);  border-color:rgba(79,195,161,.4); font-weight:600; }
+.move-selector { display:flex; gap:6px; flex-wrap:wrap; }
+.move-btn { flex:1; min-width:80px; padding:7px 0; border-radius:6px; border:1px solid var(--border); background:var(--surface2); color:var(--text-muted); font-size:.7rem; font-family:'DM Mono',monospace; cursor:pointer; transition:all .15s; text-align:center; letter-spacing:.04em; }
+.move-btn:hover { border-color:var(--accent3); color:var(--accent3); }
+.move-btn.sel-col { border-color:var(--accent3); background:rgba(123,143,245,.14); color:var(--accent3); font-weight:600; }
+.edit-actions { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:.9rem; }
+.edit-left { display:flex; gap:8px; }
+
+/* NOTES pane */
+.notes-pane { padding:1rem 1.3rem; display:flex; flex-direction:column; gap:.7rem; }
+.pane-label { font-size:.68rem; font-family:'DM Mono',monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); }
+.notes-list { display:flex; flex-direction:column; gap:.55rem; }
+.note-entry { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:.7rem .85rem; position:relative; animation:fadeInUp .2s ease backwards; }
+.note-entry::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:3px; border-radius:0 2px 2px 0; background:var(--accent3); opacity:.6; }
+.note-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; gap:6px; }
+.note-timestamp { font-size:.63rem; font-family:'DM Mono',monospace; color:var(--text-dim); letter-spacing:.04em; }
+.note-badges { display:flex; align-items:center; gap:6px; }
+.note-col-tag { font-size:.61rem; font-family:'DM Mono',monospace; padding:1px 6px; border-radius:3px; letter-spacing:.05em; }
+.note-del { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:.8rem; padding:0 2px; line-height:1; transition:color .15s; }
+.note-del:hover { color:var(--accent4); }
+.note-text { font-size:.83rem; color:var(--text); line-height:1.55; white-space:pre-wrap; word-break:break-word; }
+.notes-empty { font-size:.8rem; color:var(--text-dim); font-style:italic; text-align:center; padding:1.5rem 0; }
+
+/* Note composer footer */
+.detail-footer { padding:.85rem 1.3rem 1rem; border-top:1px solid var(--border); flex-shrink:0; }
+.note-composer { display:flex; flex-direction:column; gap:8px; }
+.note-composer-row { display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+.note-hint { font-size:.65rem; color:var(--text-dim); font-family:'DM Mono',monospace; flex:1; }
+
+@keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">M</div>
+    <div>
+      <div class="header-title">McKinney Public Library</div>
+      <div class="header-sub">Systems &amp; Technology Roadmap</div>
+    </div>
+  </div>
+  <div class="header-right" id="headerRight">
+    <div class="stats-pill">Total: <span id="totalCount">0</span> items</div>
+    <input class="search-box" type="text" placeholder="Search tasks…" id="searchInput">
+  </div>
+</header>
+
+<div class="board-container">
+  <div class="board-meta">
+    <div>
+      <div class="board-headline">Systems &amp; Technology <em>Kanban</em></div>
+      <div class="board-desc">Based on strategic discussion between Spencer Smith and Ed Veal · May 6, 2026 · Click any card to view, edit, or add notes. Drag to move between columns.</div>
+    </div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <div class="filter-chip active" data-filter="all">All</div>
+    <div class="filter-chip" data-filter="compute">Public Computing</div>
+    <div class="filter-chip" data-filter="docs">Documentation</div>
+    <div class="filter-chip" data-filter="data">Data &amp; Analytics</div>
+    <div class="filter-chip" data-filter="digital">Digital Services</div>
+    <div class="filter-chip" data-filter="app">Aspen App</div>
+    <div class="filter-chip" data-filter="amh">AMH</div>
+    <div class="filter-chip" data-filter="team">Team Dev</div>
+    <div class="filter-chip" data-filter="innovation">Innovation</div>
+    <div class="filter-chip" data-filter="hall">Hall Library</div>
+    <div class="filter-chip" data-filter="robot">Robotics</div>
+  </div>
+
+  <div class="board">
+    <div class="column col-backlog">
+      <div class="col-header"><span class="col-title">Backlog</span><span class="col-count" id="count-backlog">0</span></div>
+      <div class="col-cards" id="col-backlog" data-col="backlog"></div>
+      <div style="padding:0 .8rem .8rem"><button class="add-card-btn" onclick="openAddModal('backlog')">＋ Add task</button></div>
+    </div>
+    <div class="column col-todo">
+      <div class="col-header"><span class="col-title">To Do</span><span class="col-count" id="count-todo">0</span></div>
+      <div class="col-cards" id="col-todo" data-col="todo"></div>
+      <div style="padding:0 .8rem .8rem"><button class="add-card-btn" onclick="openAddModal('todo')">＋ Add task</button></div>
+    </div>
+    <div class="column col-progress">
+      <div class="col-header"><span class="col-title">In Progress</span><span class="col-count" id="count-progress">0</span></div>
+      <div class="col-cards" id="col-progress" data-col="progress"></div>
+      <div style="padding:0 .8rem .8rem"><button class="add-card-btn" onclick="openAddModal('progress')">＋ Add task</button></div>
+    </div>
+    <div class="column col-done">
+      <div class="col-header"><span class="col-title">Done</span><span class="col-count" id="count-done">0</span></div>
+      <div class="col-cards" id="col-done" data-col="done"></div>
+      <div style="padding:0 .8rem .8rem"><button class="add-card-btn" onclick="openAddModal('done')">＋ Add task</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <span style="color:var(--text-dim);font-size:.7rem;font-family:'DM Mono',monospace;margin-right:8px">AREAS:</span>
+  <div class="legend-item"><div class="legend-dot" style="background:#4fc3a1"></div>Public Computing</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7b8ff5"></div>Documentation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f5a623"></div>Data &amp; Analytics</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e05c6b"></div>Digital Services</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Aspen App</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>AMH</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Team Dev</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Innovation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Hall Library</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Robotics</div>
+</div>
+
+<!-- ══════════════════════════ DETAIL PANEL ══════════════════════════ -->
+<div class="overlay" id="detailOverlay">
+  <div class="detail-panel">
+
+    <div class="detail-header">
+      <div class="detail-toprow">
+        <div id="dpTag" class="card-tag" style="margin-bottom:0;flex-shrink:0"></div>
+        <div class="detail-tabs">
+          <div class="detail-tab active" data-tab="view"  onclick="switchTab('view')">View</div>
+          <div class="detail-tab"        data-tab="edit"  onclick="switchTab('edit')">Edit</div>
+          <div class="detail-tab"        data-tab="notes" onclick="switchTab('notes')">Notes</div>
+        </div>
+        <button class="detail-close" onclick="closeDetail()" title="Close (Esc)">✕</button>
+      </div>
+    </div>
+
+    <div class="detail-body">
+
+      <!-- VIEW -->
+      <div id="tabView" class="view-pane">
+        <div class="view-title" id="dpTitle"></div>
+        <div class="view-meta">
+          <span class="card-priority" id="dpPriority"></span>
+          <span id="dpMonth" style="font-size:.72rem;color:var(--text-dim);font-family:'DM Mono',monospace"></span>
+          <span class="detail-col-badge" id="dpColBadge"></span>
+        </div>
+        <div id="dpNoteCount" style="font-size:.75rem;color:var(--text-dim);font-family:'DM Mono',monospace"></div>
+        <div class="view-actions">
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('edit')">✏️ Edit card</button>
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('notes')">💬 Notes</button>
+        </div>
+      </div>
+
+      <!-- EDIT -->
+      <div id="tabEdit" class="edit-pane" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Task title</label>
+          <input class="form-control" id="editTitle" type="text" placeholder="Task title…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Area</label>
+          <select class="form-control" id="editTag">
+            <option value="compute">Public Computing</option>
+            <option value="docs">Documentation</option>
+            <option value="data">Data &amp; Analytics</option>
+            <option value="digital">Digital Services</option>
+            <option value="app">Aspen App</option>
+            <option value="amh">AMH</option>
+            <option value="team">Team Dev</option>
+            <option value="innovation">Innovation</option>
+            <option value="hall">Hall Library</option>
+            <option value="robot">Robotics</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <div class="priority-selector">
+            <button class="pri-btn" data-pri="high"   onclick="selectPri('high')">High</button>
+            <button class="pri-btn" data-pri="medium" onclick="selectPri('medium')">Medium</button>
+            <button class="pri-btn" data-pri="low"    onclick="selectPri('low')">Low</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target month</label>
+          <input class="form-control" id="editMonth" type="text" placeholder="e.g. Month 1–2">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Column</label>
+          <div class="move-selector">
+            <button class="move-btn" data-col="backlog"  onclick="selectCol('backlog')">Backlog</button>
+            <button class="move-btn" data-col="todo"     onclick="selectCol('todo')">To Do</button>
+            <button class="move-btn" data-col="progress" onclick="selectCol('progress')">In Progress</button>
+            <button class="move-btn" data-col="done"     onclick="selectCol('done')">Done</button>
+          </div>
+        </div>
+        <div class="edit-actions">
+          <div class="edit-left">
+            <button class="btn btn-primary btn-sm" onclick="saveEdit()">Save changes</button>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('view')">Cancel</button>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteCard()">Delete card</button>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div id="tabNotes" class="notes-pane" style="display:none">
+        <div class="pane-label">Status notes</div>
+        <div class="notes-list" id="notesList"></div>
+      </div>
+
+    </div><!-- /detail-body -->
+
+    <!-- Note composer footer — only visible on Notes tab -->
+    <div class="detail-footer" id="noteFooter" style="display:none">
+      <div class="note-composer">
+        <label class="form-label">Add a note</label>
+        <textarea class="form-control" id="noteInput" placeholder="Type a status update, blocker, or observation…" style="min-height:70px"></textarea>
+        <div class="note-composer-row">
+          <span class="note-hint">⌘↵ to save</span>
+          <button class="btn btn-primary btn-sm" onclick="submitNote()">Add Note</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════ ADD TASK MODAL ══════════════════════════ -->
+<div class="overlay" id="addOverlay">
+  <div class="modal">
+    <h3>Add Task</h3>
+    <div class="form-group">
+      <label class="form-label">Task title</label>
+      <input class="form-control" id="newTitle" type="text" placeholder="Task title…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Area</label>
+      <select class="form-control" id="newTag">
+        <option value="compute">Public Computing</option>
+        <option value="docs">Documentation</option>
+        <option value="data">Data &amp; Analytics</option>
+        <option value="digital">Digital Services</option>
+        <option value="app">Aspen App</option>
+        <option value="amh">AMH</option>
+        <option value="team">Team Dev</option>
+        <option value="innovation">Innovation</option>
+        <option value="hall">Hall Library</option>
+        <option value="robot">Robotics</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Priority</label>
+      <select class="form-control" id="newPriority">
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Target month</label>
+      <input class="form-control" id="newMonth" type="text" placeholder="e.g. Month 1–2">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary"   onclick="saveNewCard()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════ DATA
+const STORAGE_KEY = 'mckinney_kanban_v2';
+
+const TAG_META = {
+  compute:    { label:'Public Computing', color:'#4fc3a1', bg:'rgba(79,195,161,0.12)' },
+  docs:       { label:'Documentation',    color:'#7b8ff5', bg:'rgba(123,143,245,0.12)' },
+  data:       { label:'Data & Analytics', color:'#f5a623', bg:'rgba(245,166,35,0.12)' },
+  digital:    { label:'Digital Services', color:'#e05c6b', bg:'rgba(224,92,107,0.12)' },
+  app:        { label:'Aspen App',        color:'#a78bfa', bg:'rgba(167,139,250,0.12)' },
+  amh:        { label:'AMH',              color:'#38bdf8', bg:'rgba(56,189,248,0.12)' },
+  team:       { label:'Team Dev',         color:'#fb923c', bg:'rgba(251,146,60,0.12)' },
+  innovation: { label:'Innovation',       color:'#34d399', bg:'rgba(52,211,153,0.12)' },
+  hall:       { label:'Hall Library',     color:'#f472b6', bg:'rgba(244,114,182,0.12)' },
+  robot:      { label:'Robotics',         color:'#fbbf24', bg:'rgba(251,191,36,0.12)' },
+};
+
+const COL_META = {
+  backlog:  { label:'Backlog',     color:'#7a8499', bg:'rgba(122,132,153,0.12)' },
+  todo:     { label:'To Do',       color:'#7b8ff5', bg:'rgba(123,143,245,0.12)' },
+  progress: { label:'In Progress', color:'#f5a623', bg:'rgba(245,166,35,0.12)' },
+  done:     { label:'Done',        color:'#4fc3a1', bg:'rgba(79,195,161,0.12)' },
+};
+
+const COL_LABELS = { backlog:'Backlog', todo:'To Do', progress:'In Progress', done:'Done' };
+
+const DEFAULT_CARDS = [
+  { id:'c1',  col:'todo',    tag:'team',       title:'Meet with Systems team (group kickoff)',                           priority:'high',   month:'Month 1' },
+  { id:'c2',  col:'todo',    tag:'team',       title:'Conduct 1:1 meetings with all team members',                      priority:'high',   month:'Month 1' },
+  { id:'c3',  col:'todo',    tag:'docs',       title:'Review system ownership & responsibilities',                      priority:'high',   month:'Month 1' },
+  { id:'c4',  col:'todo',    tag:'docs',       title:'Identify pain points and operational risks',                      priority:'high',   month:'Month 1' },
+  { id:'c5',  col:'todo',    tag:'team',       title:'Meet with Library Leadership and City IT',                        priority:'high',   month:'Month 1' },
+  { id:'c6',  col:'todo',    tag:'docs',       title:'Clarify system ownership across all platforms',                   priority:'high',   month:'Month 2–3' },
+  { id:'c7',  col:'todo',    tag:'docs',       title:'Create centralized systems documentation platform',               priority:'high',   month:'Month 2–3' },
+  { id:'c8',  col:'todo',    tag:'team',       title:'Establish regular team meeting rhythm',                           priority:'medium', month:'Month 2–3' },
+  { id:'c9',  col:'todo',    tag:'docs',       title:'Develop standardized onboarding checklists',                     priority:'medium', month:'Month 2–3' },
+  { id:'c10', col:'todo',    tag:'docs',       title:'Create staff-facing troubleshooting resources',                  priority:'medium', month:'Month 2–3' },
+  { id:'c11', col:'todo',    tag:'docs',       title:'Document printing, scanning & digital services workflows',        priority:'medium', month:'Month 2–3' },
+  { id:'c12', col:'backlog', tag:'compute',    title:'Evaluate migration from LPT:One to Libki',                       priority:'high',   month:'Month 2–4' },
+  { id:'c13', col:'backlog', tag:'compute',    title:'Implement weekly free print allocation model',                   priority:'medium', month:'Month 2–3' },
+  { id:'c14', col:'backlog', tag:'compute',    title:'Review copy and scanning payment workflows',                     priority:'medium', month:'Month 2–3' },
+  { id:'c15', col:'backlog', tag:'compute',    title:'Investigate alternatives to copy payment hardware',              priority:'low',    month:'Month 3–4' },
+  { id:'c16', col:'backlog', tag:'compute',    title:'Support laptop deployment workflows at Hall Library',            priority:'high',   month:'Month 4–5' },
+  { id:'c17', col:'backlog', tag:'compute',    title:'Maintain Gay Library computer lab during transition',            priority:'medium', month:'Ongoing' },
+  { id:'c18', col:'backlog', tag:'data',       title:'Expand Metabase usage for operational reporting',                priority:'medium', month:'Month 3–5' },
+  { id:'c19', col:'backlog', tag:'data',       title:'Improve program attendance tracking workflows',                  priority:'medium', month:'Month 2–3' },
+  { id:'c20', col:'backlog', tag:'data',       title:'Standardize attendance categories for year-over-year reporting', priority:'medium', month:'Month 3' },
+  { id:'c21', col:'backlog', tag:'data',       title:'Explore lightweight ticket/request tracking system',             priority:'low',    month:'Month 4–5' },
+  { id:'c22', col:'backlog', tag:'data',       title:'Review existing Power BI and spreadsheet workflows',             priority:'low',    month:'Month 3–4' },
+  { id:'c23', col:'backlog', tag:'digital',    title:'Re-engage with Omeka digital archive initiative',               priority:'medium', month:'Month 3–4' },
+  { id:'c24', col:'backlog', tag:'digital',    title:'Review and assess OPAC configurations',                         priority:'medium', month:'Month 2–3' },
+  { id:'c25', col:'backlog', tag:'digital',    title:'Assess LibCal, cloudLibrary, book locker systems',              priority:'medium', month:'Month 2–3' },
+  { id:'c26', col:'backlog', tag:'digital',    title:'Verify and update vendor contacts',                             priority:'medium', month:'Month 1–2' },
+  { id:'c27', col:'backlog', tag:'digital',    title:'Improve communication around software updates & outages',       priority:'medium', month:'Month 2–3' },
+  { id:'c28', col:'backlog', tag:'app',        title:'Work with ByWater: push notifications & offline barcode access',priority:'high',   month:'Month 3–5' },
+  { id:'c29', col:'backlog', tag:'app',        title:'Develop strategy to reduce SMS notification dependence',        priority:'medium', month:'Month 4–5' },
+  { id:'c30', col:'backlog', tag:'app',        title:'Create patron troubleshooting workflows for app issues',        priority:'medium', month:'Month 3–4' },
+  { id:'c31', col:'backlog', tag:'amh',        title:'Review holds processing & overnight check-in behavior',         priority:'medium', month:'Month 2–3' },
+  { id:'c32', col:'backlog', tag:'amh',        title:'Verify AMH warranty coverage status',                          priority:'medium', month:'Month 1–2' },
+  { id:'c33', col:'backlog', tag:'amh',        title:'Track recurring AMH maintenance issues',                        priority:'medium', month:'Ongoing' },
+  { id:'c34', col:'backlog', tag:'amh',        title:'Begin long-term AMH replacement planning & budgeting',          priority:'low',    month:'Month 5–6' },
+  { id:'c35', col:'backlog', tag:'team',       title:'Cross-train staff on all library systems',                      priority:'high',   month:'Month 2–5' },
+  { id:'c36', col:'backlog', tag:'team',       title:'Develop internal subject matter experts',                       priority:'medium', month:'Month 3–6' },
+  { id:'c37', col:'backlog', tag:'team',       title:'Clarify leadership expectations for senior staff roles',        priority:'high',   month:'Month 2–3' },
+  { id:'c38', col:'backlog', tag:'team',       title:'Shift team culture toward proactive systems management',        priority:'high',   month:'Month 2–4' },
+  { id:'c39', col:'backlog', tag:'innovation', title:'Support participation in Empower Hour initiatives',             priority:'low',    month:'Ongoing' },
+  { id:'c40', col:'backlog', tag:'innovation', title:'Encourage AI sandbox experimentation & prototyping',            priority:'low',    month:'Ongoing' },
+  { id:'c41', col:'backlog', tag:'innovation', title:'Allocate structured time for research & professional growth',   priority:'medium', month:'Month 3–6' },
+  { id:'c42', col:'backlog', tag:'hall',       title:'Finalize staffing distribution between Hall & Gay Library',    priority:'high',   month:'Month 4–5' },
+  { id:'c43', col:'backlog', tag:'hall',       title:'Ensure all staff maintain familiarity with both locations',    priority:'medium', month:'Month 4–5' },
+  { id:'c44', col:'backlog', tag:'hall',       title:'Support shared operational knowledge across locations',         priority:'medium', month:'Month 4–6' },
+  { id:'c45', col:'backlog', tag:'robot',      title:'Explore catalog integration for robotic wayfinding',           priority:'low',    month:'Month 5–6' },
+  { id:'c46', col:'backlog', tag:'robot',      title:'Investigate dialogue flow customization for robots',           priority:'low',    month:'Month 5–6' },
+  { id:'c47', col:'backlog', tag:'robot',      title:'Evaluate integration with catalog availability data',          priority:'low',    month:'Month 6' },
+  { id:'c48', col:'backlog', tag:'docs',       title:'Evaluate team performance and system health (Month 6)',        priority:'medium', month:'Month 6' },
+  { id:'c49', col:'backlog', tag:'docs',       title:'Identify long-term opportunities (Month 6 review)',            priority:'medium', month:'Month 6' },
+  { id:'c50', col:'backlog', tag:'docs',       title:'Ensure documentation & cross-training complete',               priority:'medium', month:'Month 6' },
+];
+
+// ════════════════════════════════════════ PERSISTENCE
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cards)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    const map = {};
+    saved.forEach(c => { map[c.id] = c; });
+    const merged = DEFAULT_CARDS.map(def => {
+      const s = map[def.id];
+      return s ? { ...def, col:s.col, priority:s.priority, month:s.month, title:s.title, tag:s.tag, notes:s.notes||[] }
+               : { ...def, notes:[] };
+    });
+    saved.filter(s => !DEFAULT_CARDS.find(d => d.id === s.id))
+         .forEach(s => merged.push({ ...s, notes:s.notes||[] }));
+    return merged;
+  } catch(e) { return null; }
+}
+
+let cards = loadState() || DEFAULT_CARDS.map(c => ({ ...c, notes:[] }));
+cards.forEach((c, i) => { c.delay = (i % 12) * 0.03; });
+
+// ════════════════════════════════════════ UI STATE
+let activeFilter = 'all';
+let dragCardId   = null;
+let activeCardId = null;
+let editPri      = null;
+let editCol      = null;
+
+// ════════════════════════════════════════ TOAST
+function toast(msg) {
+  let t = document.getElementById('_toast');
+  if (!t) {
+    t = document.createElement('div'); t.id = '_toast';
+    t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(60px);background:#1e2535;border:1px solid #4fc3a1;color:#4fc3a1;font-family:"DM Mono",monospace;font-size:.72rem;letter-spacing:.06em;padding:8px 20px;border-radius:20px;z-index:9999;transition:transform .25s,opacity .25s;opacity:0;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.transform = 'translateX(-50%) translateY(0)'; t.style.opacity = '1';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.style.transform='translateX(-50%) translateY(60px)'; t.style.opacity='0'; }, 2300);
+}
+
+// ════════════════════════════════════════ HELPERS
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function nowTs() {
+  const d = new Date();
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+       + ' · ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+
+// ════════════════════════════════════════ CARD RENDERING
+function makeCard(card) {
+  const tag = TAG_META[card.tag] || TAG_META.docs;
+  const el  = document.createElement('div');
+  el.className = 'card';
+  el.dataset.id = card.id; el.dataset.tag = card.tag;
+  el.draggable = true;
+  el.style.animationDelay = (card.delay||0) + 's';
+  el.title = 'Click to open';
+
+  const n   = (card.notes||[]).length;
+  const pip = n > 0
+    ? `<div class="card-note-pip"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="opacity:.55"><path d="M2 2h8v7H7l-2 2V9H2V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>${n} note${n!==1?'s':''}</div>`
+    : '';
+
+  el.innerHTML = `
+    <div class="card-tag" style="color:${tag.color};background:${tag.bg}">${tag.label}</div>
+    <div class="card-title">${escHtml(card.title)}</div>
+    <div class="card-meta">
+      <span class="card-priority priority-${card.priority}">${card.priority}</span>
+      <span class="card-month">${escHtml(card.month)}</span>
+    </div>${pip}`;
+
+  el.addEventListener('dragstart', () => { dragCardId = card.id; el.classList.add('dragging'); });
+  el.addEventListener('dragend',   () => { el.classList.remove('dragging'); dragCardId = null; });
+  el.addEventListener('click',     () => { if (!dragCardId) openDetail(card.id); });
+  return el;
+}
+
+// ════════════════════════════════════════ RENDER BOARD
+function render() {
+  ['backlog','todo','progress','done'].forEach(col => {
+    const zone     = document.getElementById('col-' + col);
+    zone.innerHTML = '';
+    const colCards = cards.filter(c => c.col === col);
+    colCards.forEach(card => {
+      const el = makeCard(card);
+      if (activeFilter !== 'all' && card.tag !== activeFilter) el.classList.add('hidden');
+      zone.appendChild(el);
+    });
+    const vis = colCards.filter(c => activeFilter === 'all' || c.tag === activeFilter).length;
+    document.getElementById('count-' + col).textContent = vis;
+  });
+  document.getElementById('totalCount').textContent = cards.length;
+  applySearch();
+}
+
+// ════════════════════════════════════════ DRAG & DROP
+document.querySelectorAll('.col-cards').forEach(zone => {
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', ()=> zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', () => {
+    zone.classList.remove('drag-over');
+    if (!dragCardId) return;
+    const newCol = zone.dataset.col;
+    const card   = cards.find(c => c.id === dragCardId);
+    if (card && card.col !== newCol) {
+      card.col = newCol; saveState(); render();
+      toast(`Moved to ${COL_LABELS[newCol]} · saved`);
+    }
+  });
+});
+
+// ════════════════════════════════════════ FILTER + SEARCH
+document.getElementById('filterBar').addEventListener('click', e => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  activeFilter = chip.dataset.filter;
+  render();
+});
+
+function applySearch() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.card').forEach(el => {
+    if (el.classList.contains('hidden')) return;
+    el.style.display = (!q || el.querySelector('.card-title').textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+document.getElementById('searchInput').addEventListener('input', applySearch);
+
+// ════════════════════════════════════════ DETAIL PANEL
+function openDetail(cardId, startTab) {
+  activeCardId = cardId;
+  switchTab(startTab || 'view');
+  document.getElementById('detailOverlay').classList.add('visible');
+}
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('visible');
+  activeCardId = null;
+}
+
+function switchTab(tab) {
+  // Panes
+  document.getElementById('tabView').style.display  = tab === 'view'  ? '' : 'none';
+  document.getElementById('tabEdit').style.display  = tab === 'edit'  ? '' : 'none';
+  document.getElementById('tabNotes').style.display = tab === 'notes' ? '' : 'none';
+  document.getElementById('noteFooter').style.display = tab === 'notes' ? '' : 'none';
+  // Tabs
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+
+  const card = cards.find(c => c.id === activeCardId);
+  if (!card) return;
+  if (tab === 'view')  renderView(card);
+  if (tab === 'edit')  renderEdit(card);
+  if (tab === 'notes') { renderNotes(card); setTimeout(() => document.getElementById('noteInput').focus(), 100); }
+}
+
+// ── VIEW ──────────────────────────────────────────────────────────────
+function renderView(card) {
+  const tag = TAG_META[card.tag] || TAG_META.docs;
+  const col = COL_META[card.col]  || COL_META.backlog;
+
+  const dpTag = document.getElementById('dpTag');
+  dpTag.textContent = tag.label; dpTag.style.color = tag.color; dpTag.style.background = tag.bg;
+
+  document.getElementById('dpTitle').textContent = card.title;
+
+  const pri = document.getElementById('dpPriority');
+  pri.textContent = card.priority; pri.className = 'card-priority priority-' + card.priority;
+
+  document.getElementById('dpMonth').textContent = card.month;
+
+  const badge = document.getElementById('dpColBadge');
+  badge.textContent = col.label;
+  badge.style.color = col.color; badge.style.background = col.bg; badge.style.border = `1px solid ${col.color}55`;
+
+  const n = (card.notes||[]).length;
+  document.getElementById('dpNoteCount').textContent = n > 0 ? `${n} note${n!==1?'s':''} attached` : 'No notes yet';
+}
+
+// ── EDIT ──────────────────────────────────────────────────────────────
+function renderEdit(card) {
+  document.getElementById('editTitle').value = card.title;
+  document.getElementById('editTag').value   = card.tag;
+  document.getElementById('editMonth').value = card.month;
+  editPri = card.priority;
+  editCol = card.col;
+  refreshPriButtons();
+  refreshColButtons();
+  setTimeout(() => document.getElementById('editTitle').focus(), 80);
+}
+
+function selectPri(p) { editPri = p; refreshPriButtons(); }
+function refreshPriButtons() {
+  document.querySelectorAll('.pri-btn').forEach(b => {
+    b.className = 'pri-btn' + (b.dataset.pri === editPri ? ' sel-' + editPri : '');
+  });
+}
+
+function selectCol(c) { editCol = c; refreshColButtons(); }
+function refreshColButtons() {
+  document.querySelectorAll('.move-btn').forEach(b => b.classList.toggle('sel-col', b.dataset.col === editCol));
+}
+
+function saveEdit() {
+  const card     = cards.find(c => c.id === activeCardId);
+  if (!card) return;
+  const newTitle = document.getElementById('editTitle').value.trim();
+  if (!newTitle) { document.getElementById('editTitle').focus(); return; }
+
+  const changed = [];
+  if (card.title    !== newTitle)  changed.push('title');
+  if (card.tag      !== document.getElementById('editTag').value) changed.push('area');
+  if (card.priority !== editPri)   changed.push('priority');
+  if (card.month    !== (document.getElementById('editMonth').value.trim()||card.month)) changed.push('month');
+  if (card.col      !== editCol)   changed.push('column');
+
+  card.title    = newTitle;
+  card.tag      = document.getElementById('editTag').value;
+  card.priority = editPri;
+  card.month    = document.getElementById('editMonth').value.trim() || card.month;
+  card.col      = editCol;
+
+  saveState(); render(); switchTab('view');
+  toast(changed.length ? `Saved · updated ${changed.join(', ')}` : 'No changes');
+}
+
+function deleteCard() {
+  if (!confirm('Delete this card permanently? This cannot be undone.')) return;
+  cards = cards.filter(c => c.id !== activeCardId);
+  saveState(); render(); closeDetail();
+  toast('Card deleted');
+}
+
+// ── NOTES ─────────────────────────────────────────────────────────────
+function renderNotes(card) {
+  const list  = document.getElementById('notesList');
+  const notes = card.notes || [];
+  list.innerHTML = '';
+  if (notes.length === 0) {
+    list.innerHTML = '<div class="notes-empty">No notes yet — add one below.</div>';
+    return;
+  }
+  [...notes].reverse().forEach((note, idx) => {
+    const realIdx = notes.length - 1 - idx;
+    const cm      = COL_META[note.col] || COL_META.backlog;
+    const entry   = document.createElement('div');
+    entry.className = 'note-entry';
+    entry.style.animationDelay = (idx * 0.04) + 's';
+    entry.innerHTML = `
+      <div class="note-meta">
+        <span class="note-timestamp">${note.timestamp}</span>
+        <div class="note-badges">
+          <span class="note-col-tag" style="color:${cm.color};background:${cm.bg};border:1px solid ${cm.color}44">${cm.label}</span>
+          <button class="note-del" onclick="deleteNote(${realIdx})" title="Remove note">✕</button>
+        </div>
+      </div>
+      <div class="note-text">${escHtml(note.text)}</div>`;
+    list.appendChild(entry);
+  });
+}
+
+function submitNote() {
+  const input = document.getElementById('noteInput');
+  const text  = input.value.trim();
+  if (!text || !activeCardId) return;
+  const card = cards.find(c => c.id === activeCardId);
+  if (!card) return;
+  if (!card.notes) card.notes = [];
+  card.notes.push({ text, col:card.col, timestamp:nowTs() });
+  input.value = '';
+  saveState(); renderNotes(card); render();
+  toast('Note saved');
+}
+
+function deleteNote(idx) {
+  const card = cards.find(c => c.id === activeCardId);
+  if (!card || !card.notes) return;
+  card.notes.splice(idx, 1);
+  saveState(); renderNotes(card); render();
+  toast('Note removed');
+}
+
+document.getElementById('noteInput').addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); submitNote(); }
+});
+
+// ════════════════════════════════════════ ADD TASK MODAL
+let addCol = null;
+function openAddModal(col) { addCol = col; document.getElementById('addOverlay').classList.add('visible'); setTimeout(()=>document.getElementById('newTitle').focus(),80); }
+function closeAddModal() {
+  document.getElementById('addOverlay').classList.remove('visible');
+  ['newTitle','newMonth'].forEach(id => document.getElementById(id).value = '');
+}
+function saveNewCard() {
+  const title = document.getElementById('newTitle').value.trim();
+  if (!title) { document.getElementById('newTitle').focus(); return; }
+  const card = { id:'u'+Date.now(), col:addCol, tag:document.getElementById('newTag').value,
+    title, priority:document.getElementById('newPriority').value,
+    month:document.getElementById('newMonth').value.trim()||'TBD', notes:[], delay:0 };
+  cards.push(card); saveState(); closeAddModal(); render();
+  toast('Task added · saved');
+}
+
+// ════════════════════════════════════════ OVERLAY CLICKS + KEYBOARD
+document.getElementById('detailOverlay').addEventListener('click', e => { if (e.target===document.getElementById('detailOverlay')) closeDetail(); });
+document.getElementById('addOverlay').addEventListener('click',    e => { if (e.target===document.getElementById('addOverlay'))    closeAddModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('detailOverlay').classList.contains('visible')) closeDetail();
+  else if (document.getElementById('addOverlay').classList.contains('visible')) closeAddModal();
+});
+
+// ════════════════════════════════════════ RESET BUTTON
+(function() {
+  const btn = document.createElement('button');
+  btn.textContent = 'Reset Board';
+  btn.style.cssText = 'background:transparent;border:1px solid #2a3347;border-radius:8px;color:#4a5568;font-family:"DM Mono",monospace;font-size:.68rem;letter-spacing:.06em;padding:5px 12px;cursor:pointer;transition:all .15s';
+  btn.onmouseenter = () => { btn.style.borderColor='#e05c6b'; btn.style.color='#e05c6b'; };
+  btn.onmouseleave = () => { btn.style.borderColor='#2a3347'; btn.style.color='#4a5568'; };
+  btn.onclick = () => {
+    if (!confirm('Reset the board to its original state? All edits, moves, and notes will be permanently lost.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    cards = DEFAULT_CARDS.map(c => ({ ...c, notes:[] }));
+    cards.forEach((c,i) => { c.delay = (i%12)*0.03; });
+    render(); toast('Board reset to defaults');
+  };
+  document.getElementById('headerRight').prepend(btn);
+})();
+
+// ════════════════════════════════════════ INIT
+render();
+</script>
+</body>
+</html>
