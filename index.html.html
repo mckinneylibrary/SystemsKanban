@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>McKinney Public Library — Systems & Technology Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b25;
+    --surface2: #1e2535;
+    --border: #2a3347;
+    --accent: #4fc3a1;
+    --accent2: #f5a623;
+    --accent3: #7b8ff5;
+    --accent4: #e05c6b;
+    --text: #e8eaf0;
+    --text-muted: #7a8499;
+    --text-dim: #4a5568;
+
+    --col-backlog: #2a3347;
+    --col-todo: #1e3a4a;
+    --col-progress: #2a2410;
+    --col-done: #1a2e1a;
+
+    --tag-compute: #4fc3a1;
+    --tag-docs: #7b8ff5;
+    --tag-data: #f5a623;
+    --tag-digital: #e05c6b;
+    --tag-app: #a78bfa;
+    --tag-amh: #38bdf8;
+    --tag-team: #fb923c;
+    --tag-innovation: #34d399;
+    --tag-hall: #f472b6;
+    --tag-robot: #fbbf24;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: auto;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(14,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: #0e1117;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.01em;
+    color: var(--text);
+  }
+
+  .header-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+
+  .stats-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stats-pill span {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .search-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--text-dim); }
+
+  /* Board */
+  .board-container {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem 2rem 3rem;
+  }
+
+  .board-meta {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .board-headline {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .board-headline em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .board-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+
+  /* Filter chips */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-chip {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.72rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .filter-chip.active {
+    background: var(--accent);
+    color: #0e1117;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .filter-chip:not(.active) {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border-color: var(--border);
+  }
+
+  .filter-chip:hover:not(.active) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Columns */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(280px, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .column {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: opacity 0.2s;
+  }
+
+  .column.filtered-out { opacity: 0.2; }
+
+  .col-header {
+    padding: 1rem 1.1rem 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .col-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .col-backlog .col-header::before { background: var(--text-dim); }
+  .col-todo .col-header::before { background: var(--accent3); }
+  .col-progress .col-header::before { background: var(--accent2); }
+  .col-done .col-header::before { background: var(--accent); }
+
+  .col-title {
+    font-size: 0.78rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .col-count {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .col-cards {
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-height: 60px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 0.9rem;
+    cursor: grab;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, opacity 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border-color: rgba(79, 195, 161, 0.3);
+  }
+
+  .card.dragging {
+    opacity: 0.4;
+    transform: scale(0.97);
+    cursor: grabbing;
+  }
+
+  .card.hidden { display: none; }
+
+  .card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+
+  .card-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+
+  .card-priority {
+    font-size: 0.65rem;
+    font-family: 'DM Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .priority-high { background: rgba(224,92,107,0.15); color: var(--accent4); border: 1px solid rgba(224,92,107,0.3); }
+  .priority-medium { background: rgba(245,166,35,0.15); color: var(--accent2); border: 1px solid rgba(245,166,35,0.3); }
+  .priority-low { background: rgba(79,195,161,0.1); color: var(--accent); border: 1px solid rgba(79,195,161,0.2); }
+
+  .card-month {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Drag over indicator */
+  .col-cards.drag-over {
+    background: rgba(79, 195, 161, 0.04);
+    border-radius: 8px;
+    outline: 2px dashed rgba(79, 195, 161, 0.3);
+  }
+
+  /* Add card button */
+  .add-card-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 8px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-size: 0.76rem;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 2px;
+  }
+
+  .add-card-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(79, 195, 161, 0.05);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: 440px;
+    max-width: 90vw;
+    transform: translateY(10px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.visible .modal { transform: translateY(0); }
+
+  .modal h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .modal input, .modal select, .modal textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+    margin-bottom: 0.8rem;
+    transition: border-color 0.2s;
+  }
+
+  .modal input:focus, .modal select:focus, .modal textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .modal select option { background: var(--surface); }
+
+  .modal textarea { resize: vertical; min-height: 80px; }
+
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+
+  .btn {
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+
+  .btn-primary { background: var(--accent); color: #0e1117; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-secondary { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-secondary:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    animation: fadeInUp 0.3s ease backwards;
+  }
+
+  /* Note indicator pip on card */
+  .card-note-pip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.62rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    margin-top: 6px;
+    padding: 2px 6px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .card-note-pip svg { opacity: 0.6; }
+
+  /* Detail panel overlay */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .detail-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    width: 520px;
+    max-width: 94vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(16px) scale(0.98);
+    transition: transform 0.22s ease;
+    overflow: hidden;
+  }
+
+  .detail-overlay.visible .detail-panel {
+    transform: translateY(0) scale(1);
+  }
+
+  .detail-header {
+    padding: 1.2rem 1.4rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .detail-tag-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .detail-close {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .detail-close:hover { border-color: var(--accent4); color: var(--accent4); }
+
+  .detail-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .detail-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .detail-col-badge {
+    font-size: 0.66rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  /* Notes section */
+  .detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .notes-section-label {
+    font-size: 0.68rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+
+  .notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .note-entry {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    position: relative;
+    animation: fadeInUp 0.2s ease backwards;
+  }
+
+  .note-entry::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 12px; bottom: 12px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--accent3);
+    opacity: 0.6;
+  }
+
+  .note-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+
+  .note-timestamp {
+    font-size: 0.63rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .note-col-tag {
+    font-size: 0.61rem;
+    font-family: 'DM Mono', monospace;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .note-delete {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .note-delete:hover { color: var(--accent4); }
+
+  .note-text {
+    font-size: 0.83rem;
+    color: var(--text);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .notes-empty {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-style: italic;
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+
+  /* Add note composer */
+  .detail-footer {
+    padding: 0.9rem 1.4rem 1.1rem;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .note-composer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .note-composer-label {
+    font-size: 0.68rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .note-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.84rem;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    resize: none;
+    min-height: 72px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+
+  .note-input:focus { border-color: var(--accent3); }
+  .note-input::placeholder { color: var(--text-dim); }
+
+  .note-composer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .note-hint {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    flex: 1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">M</div>
+    <div>
+      <div class="header-title">McKinney Public Library</div>
+      <div class="header-sub">Systems &amp; Technology Roadmap</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="stats-pill" id="total-pill">Total: <span id="total-count">0</span> items</div>
+    <input class="search-box" type="text" placeholder="Search tasks…" id="searchInput" />
+  </div>
+</header>
+
+<div class="board-container">
+  <div class="board-meta">
+    <div>
+      <div class="board-headline">Systems &amp; Technology <em>Kanban</em></div>
+      <div class="board-desc">Based on strategic discussion between Spencer Smith and Ed Veal · May 6, 2026 · Drag cards between columns to update status.</div>
+    </div>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <div class="filter-chip active" data-filter="all">All</div>
+    <div class="filter-chip" data-filter="compute" style="--tag-color:#4fc3a1">Public Computing</div>
+    <div class="filter-chip" data-filter="docs" style="--tag-color:#7b8ff5">Documentation</div>
+    <div class="filter-chip" data-filter="data" style="--tag-color:#f5a623">Data &amp; Analytics</div>
+    <div class="filter-chip" data-filter="digital" style="--tag-color:#e05c6b">Digital Services</div>
+    <div class="filter-chip" data-filter="app" style="--tag-color:#a78bfa">Aspen App</div>
+    <div class="filter-chip" data-filter="amh" style="--tag-color:#38bdf8">AMH</div>
+    <div class="filter-chip" data-filter="team" style="--tag-color:#fb923c">Team Dev</div>
+    <div class="filter-chip" data-filter="innovation" style="--tag-color:#34d399">Innovation</div>
+    <div class="filter-chip" data-filter="hall" style="--tag-color:#f472b6">Hall Library</div>
+    <div class="filter-chip" data-filter="robot" style="--tag-color:#fbbf24">Robotics</div>
+  </div>
+
+  <div class="board" id="board">
+
+    <!-- BACKLOG -->
+    <div class="column col-backlog" data-col="backlog">
+      <div class="col-header">
+        <span class="col-title">Backlog</span>
+        <span class="col-count" id="count-backlog">0</span>
+      </div>
+      <div class="col-cards" id="col-backlog" data-col="backlog"></div>
+      <div style="padding: 0 0.8rem 0.8rem;">
+        <button class="add-card-btn" onclick="openModal('backlog')">＋ Add task</button>
+      </div>
+    </div>
+
+    <!-- TO DO -->
+    <div class="column col-todo" data-col="todo">
+      <div class="col-header">
+        <span class="col-title">To Do</span>
+        <span class="col-count" id="count-todo">0</span>
+      </div>
+      <div class="col-cards" id="col-todo" data-col="todo"></div>
+      <div style="padding: 0 0.8rem 0.8rem;">
+        <button class="add-card-btn" onclick="openModal('todo')">＋ Add task</button>
+      </div>
+    </div>
+
+    <!-- IN PROGRESS -->
+    <div class="column col-progress" data-col="progress">
+      <div class="col-header">
+        <span class="col-title">In Progress</span>
+        <span class="col-count" id="count-progress">0</span>
+      </div>
+      <div class="col-cards" id="col-progress" data-col="progress"></div>
+      <div style="padding: 0 0.8rem 0.8rem;">
+        <button class="add-card-btn" onclick="openModal('progress')">＋ Add task</button>
+      </div>
+    </div>
+
+    <!-- DONE -->
+    <div class="column col-done" data-col="done">
+      <div class="col-header">
+        <span class="col-title">Done</span>
+        <span class="col-count" id="count-done">0</span>
+      </div>
+      <div class="col-cards" id="col-done" data-col="done"></div>
+      <div style="padding: 0 0.8rem 0.8rem;">
+        <button class="add-card-btn" onclick="openModal('done')">＋ Add task</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="legend">
+  <span style="color: var(--text-dim); font-size:0.7rem; font-family:'DM Mono',monospace; margin-right:8px;">AREAS:</span>
+  <div class="legend-item"><div class="legend-dot" style="background:#4fc3a1"></div>Public Computing</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7b8ff5"></div>Documentation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f5a623"></div>Data &amp; Analytics</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e05c6b"></div>Digital Services</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Aspen App</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>AMH</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Team Dev</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Innovation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Hall Library</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Robotics</div>
+</div>
+
+<!-- Card Detail / Notes Panel -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-panel">
+    <div class="detail-header">
+      <div class="detail-tag-row">
+        <div id="detailTag" class="card-tag" style="margin-bottom:0"></div>
+        <button class="detail-close" onclick="closeDetail()" title="Close">✕</button>
+      </div>
+      <div class="detail-title" id="detailTitle"></div>
+      <div class="detail-meta-row">
+        <span class="card-priority" id="detailPriority"></span>
+        <span class="card-month" id="detailMonth" style="font-size:0.72rem;color:var(--text-dim);font-family:'DM Mono',monospace;"></span>
+        <span class="detail-col-badge" id="detailColBadge"></span>
+      </div>
+    </div>
+
+    <div class="detail-body" id="detailBody">
+      <div class="notes-section-label">Status Notes</div>
+      <div class="notes-list" id="notesList"></div>
+    </div>
+
+    <div class="detail-footer">
+      <div class="note-composer">
+        <div class="note-composer-label">Add a note</div>
+        <textarea class="note-input" id="noteInput" placeholder="Type a status update, blocker, or observation…"></textarea>
+        <div class="note-composer-actions">
+          <span class="note-hint">⌘↵ to save</span>
+          <button class="btn btn-secondary" onclick="closeDetail()">Close</button>
+          <button class="btn btn-primary" onclick="submitNote()">Add Note</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Card Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Add Task</h3>
+    <input type="text" id="newTitle" placeholder="Task title…" />
+    <select id="newTag">
+      <option value="compute">Public Computing</option>
+      <option value="docs">Documentation</option>
+      <option value="data">Data &amp; Analytics</option>
+      <option value="digital">Digital Services</option>
+      <option value="app">Aspen App</option>
+      <option value="amh">AMH</option>
+      <option value="team">Team Dev</option>
+      <option value="innovation">Innovation</option>
+      <option value="hall">Hall Library</option>
+      <option value="robot">Robotics</option>
+    </select>
+    <select id="newPriority">
+      <option value="high">High Priority</option>
+      <option value="medium">Medium Priority</option>
+      <option value="low">Low Priority</option>
+    </select>
+    <input type="text" id="newMonth" placeholder="Target (e.g. Month 1–2)" />
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCard()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'mckinney_kanban_v1';
+
+const TAG_META = {
+  compute:    { label: 'Public Computing', color: '#4fc3a1', bg: 'rgba(79,195,161,0.12)' },
+  docs:       { label: 'Documentation',    color: '#7b8ff5', bg: 'rgba(123,143,245,0.12)' },
+  data:       { label: 'Data & Analytics', color: '#f5a623', bg: 'rgba(245,166,35,0.12)' },
+  digital:    { label: 'Digital Services', color: '#e05c6b', bg: 'rgba(224,92,107,0.12)' },
+  app:        { label: 'Aspen App',        color: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
+  amh:        { label: 'AMH',              color: '#38bdf8', bg: 'rgba(56,189,248,0.12)' },
+  team:       { label: 'Team Dev',         color: '#fb923c', bg: 'rgba(251,146,60,0.12)' },
+  innovation: { label: 'Innovation',       color: '#34d399', bg: 'rgba(52,211,153,0.12)' },
+  hall:       { label: 'Hall Library',     color: '#f472b6', bg: 'rgba(244,114,182,0.12)' },
+  robot:      { label: 'Robotics',         color: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
+};
+
+const DEFAULT_CARDS = [
+  { id:'c1',  col:'todo',     tag:'team',       title:'Meet with Systems team (group kickoff)',                          priority:'high',   month:'Month 1' },
+  { id:'c2',  col:'todo',     tag:'team',       title:'Conduct 1:1 meetings with all team members',                     priority:'high',   month:'Month 1' },
+  { id:'c3',  col:'todo',     tag:'docs',       title:'Review system ownership & responsibilities',                     priority:'high',   month:'Month 1' },
+  { id:'c4',  col:'todo',     tag:'docs',       title:'Identify pain points and operational risks',                     priority:'high',   month:'Month 1' },
+  { id:'c5',  col:'todo',     tag:'team',       title:'Meet with Library Leadership and City IT',                       priority:'high',   month:'Month 1' },
+  { id:'c6',  col:'todo',     tag:'docs',       title:'Clarify system ownership across all platforms',                  priority:'high',   month:'Month 2–3' },
+  { id:'c7',  col:'todo',     tag:'docs',       title:'Create centralized systems documentation platform',              priority:'high',   month:'Month 2–3' },
+  { id:'c8',  col:'todo',     tag:'team',       title:'Establish regular team meeting rhythm',                          priority:'medium', month:'Month 2–3' },
+  { id:'c9',  col:'todo',     tag:'docs',       title:'Develop standardized onboarding checklists',                    priority:'medium', month:'Month 2–3' },
+  { id:'c10', col:'todo',     tag:'docs',       title:'Create staff-facing troubleshooting resources',                 priority:'medium', month:'Month 2–3' },
+  { id:'c11', col:'todo',     tag:'docs',       title:'Document printing, scanning & digital services workflows',       priority:'medium', month:'Month 2–3' },
+  { id:'c12', col:'backlog',  tag:'compute',    title:'Evaluate migration from LPT:One to Libki',                      priority:'high',   month:'Month 2–4' },
+  { id:'c13', col:'backlog',  tag:'compute',    title:'Implement weekly free print allocation model',                  priority:'medium', month:'Month 2–3' },
+  { id:'c14', col:'backlog',  tag:'compute',    title:'Review copy and scanning payment workflows',                    priority:'medium', month:'Month 2–3' },
+  { id:'c15', col:'backlog',  tag:'compute',    title:'Investigate alternatives to copy payment hardware',             priority:'low',    month:'Month 3–4' },
+  { id:'c16', col:'backlog',  tag:'compute',    title:'Support laptop deployment workflows at Hall Library',           priority:'high',   month:'Month 4–5' },
+  { id:'c17', col:'backlog',  tag:'compute',    title:'Maintain Gay Library computer lab during transition',           priority:'medium', month:'Ongoing' },
+  { id:'c18', col:'backlog',  tag:'data',       title:'Expand Metabase usage for operational reporting',               priority:'medium', month:'Month 3–5' },
+  { id:'c19', col:'backlog',  tag:'data',       title:'Improve program attendance tracking workflows',                 priority:'medium', month:'Month 2–3' },
+  { id:'c20', col:'backlog',  tag:'data',       title:'Standardize attendance categories for year-over-year reporting',priority:'medium', month:'Month 3' },
+  { id:'c21', col:'backlog',  tag:'data',       title:'Explore lightweight ticket/request tracking system',            priority:'low',    month:'Month 4–5' },
+  { id:'c22', col:'backlog',  tag:'data',       title:'Review existing Power BI and spreadsheet workflows',            priority:'low',    month:'Month 3–4' },
+  { id:'c23', col:'backlog',  tag:'digital',    title:'Re-engage with Omeka digital archive initiative',              priority:'medium', month:'Month 3–4' },
+  { id:'c24', col:'backlog',  tag:'digital',    title:'Review and assess OPAC configurations',                        priority:'medium', month:'Month 2–3' },
+  { id:'c25', col:'backlog',  tag:'digital',    title:'Assess LibCal, cloudLibrary, book locker systems',             priority:'medium', month:'Month 2–3' },
+  { id:'c26', col:'backlog',  tag:'digital',    title:'Verify and update vendor contacts',                            priority:'medium', month:'Month 1–2' },
+  { id:'c27', col:'backlog',  tag:'digital',    title:'Improve communication around software updates & outages',      priority:'medium', month:'Month 2–3' },
+  { id:'c28', col:'backlog',  tag:'app',        title:'Work with ByWater: push notifications & offline barcode access',priority:'high',   month:'Month 3–5' },
+  { id:'c29', col:'backlog',  tag:'app',        title:'Develop strategy to reduce SMS notification dependence',       priority:'medium', month:'Month 4–5' },
+  { id:'c30', col:'backlog',  tag:'app',        title:'Create patron troubleshooting workflows for app issues',       priority:'medium', month:'Month 3–4' },
+  { id:'c31', col:'backlog',  tag:'amh',        title:'Review holds processing & overnight check-in behavior',        priority:'medium', month:'Month 2–3' },
+  { id:'c32', col:'backlog',  tag:'amh',        title:'Verify AMH warranty coverage status',                         priority:'medium', month:'Month 1–2' },
+  { id:'c33', col:'backlog',  tag:'amh',        title:'Track recurring AMH maintenance issues',                       priority:'medium', month:'Ongoing' },
+  { id:'c34', col:'backlog',  tag:'amh',        title:'Begin long-term AMH replacement planning & budgeting',         priority:'low',    month:'Month 5–6' },
+  { id:'c35', col:'backlog',  tag:'team',       title:'Cross-train staff on all library systems',                     priority:'high',   month:'Month 2–5' },
+  { id:'c36', col:'backlog',  tag:'team',       title:'Develop internal subject matter experts',                      priority:'medium', month:'Month 3–6' },
+  { id:'c37', col:'backlog',  tag:'team',       title:'Clarify leadership expectations for senior staff roles',       priority:'high',   month:'Month 2–3' },
+  { id:'c38', col:'backlog',  tag:'team',       title:'Shift team culture toward proactive systems management',       priority:'high',   month:'Month 2–4' },
+  { id:'c39', col:'backlog',  tag:'innovation', title:'Support participation in Empower Hour initiatives',            priority:'low',    month:'Ongoing' },
+  { id:'c40', col:'backlog',  tag:'innovation', title:'Encourage AI sandbox experimentation & prototyping',           priority:'low',    month:'Ongoing' },
+  { id:'c41', col:'backlog',  tag:'innovation', title:'Allocate structured time for research & professional growth',  priority:'medium', month:'Month 3–6' },
+  { id:'c42', col:'backlog',  tag:'hall',       title:'Finalize staffing distribution between Hall & Gay Library',   priority:'high',   month:'Month 4–5' },
+  { id:'c43', col:'backlog',  tag:'hall',       title:'Ensure all staff maintain familiarity with both locations',   priority:'medium', month:'Month 4–5' },
+  { id:'c44', col:'backlog',  tag:'hall',       title:'Support shared operational knowledge across locations',        priority:'medium', month:'Month 4–6' },
+  { id:'c45', col:'backlog',  tag:'robot',      title:'Explore catalog integration for robotic wayfinding',          priority:'low',    month:'Month 5–6' },
+  { id:'c46', col:'backlog',  tag:'robot',      title:'Investigate dialogue flow customization for robots',          priority:'low',    month:'Month 5–6' },
+  { id:'c47', col:'backlog',  tag:'robot',      title:'Evaluate integration with catalog availability data',         priority:'low',    month:'Month 6' },
+  { id:'c48', col:'backlog',  tag:'docs',       title:'Evaluate team performance and system health (Month 6)',       priority:'medium', month:'Month 6' },
+  { id:'c49', col:'backlog',  tag:'docs',       title:'Identify long-term opportunities (Month 6 review)',           priority:'medium', month:'Month 6' },
+  { id:'c50', col:'backlog',  tag:'docs',       title:'Ensure documentation & cross-training complete',              priority:'medium', month:'Month 6' },
+];
+
+// ── Persistence ──────────────────────────────────────────────────────────────
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  } catch(e) { /* storage unavailable */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    const savedMap = {};
+    saved.forEach(c => { savedMap[c.id] = c; });
+    return DEFAULT_CARDS.map(def => {
+      const s = savedMap[def.id];
+      return s ? { ...def, col: s.col, priority: s.priority, month: s.month, title: s.title, notes: s.notes || [] } : { ...def, notes: [] };
+    }).concat(
+      saved.filter(s => !DEFAULT_CARDS.find(d => d.id === s.id))
+    );
+  } catch(e) { return null; }
+}
+
+// ── Bootstrap cards ──────────────────────────────────────────────────────────
+
+let cards = loadState() || DEFAULT_CARDS.map(c => ({ ...c, notes: [] }));
+cards.forEach((c, i) => { c.delay = (i % 10) * 0.04; });
+
+// ── UI state ─────────────────────────────────────────────────────────────────
+
+let activeFilter = 'all';
+let dragCard = null;
+let modalCol = null;
+let activeDetailId = null;
+
+// ── Toast notification ────────────────────────────────────────────────────────
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `
+      position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(60px);
+      background:#1e2535; border:1px solid #4fc3a1; color:#4fc3a1;
+      font-family:'DM Mono',monospace; font-size:0.72rem; letter-spacing:0.06em;
+      padding:8px 18px; border-radius:20px; z-index:9999;
+      transition:transform 0.25s ease, opacity 0.25s ease; opacity:0; pointer-events:none;
+    `;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.transform = 'translateX(-50%) translateY(60px)';
+    t.style.opacity = '0';
+  }, 2000);
+}
+
+// ── Card rendering ────────────────────────────────────────────────────────────
+
+function makeCard(card) {
+  const tag = TAG_META[card.tag] || TAG_META.docs;
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.dataset.id = card.id;
+  div.dataset.tag = card.tag;
+  div.draggable = true;
+  div.style.animationDelay = (card.delay || 0) + 's';
+  div.title = 'Click to view / add notes';
+
+  const noteCount = (card.notes || []).length;
+  const notePip = noteCount > 0
+    ? `<div class="card-note-pip">
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 2h8v7H7l-2 2V9H2V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        ${noteCount} note${noteCount !== 1 ? 's' : ''}
+      </div>`
+    : '';
+
+  div.innerHTML = `
+    <div class="card-tag" style="color:${tag.color};background:${tag.bg}">${tag.label}</div>
+    <div class="card-title">${card.title}</div>
+    <div class="card-meta">
+      <span class="card-priority priority-${card.priority}">${card.priority}</span>
+      <span class="card-month">${card.month}</span>
+    </div>
+    ${notePip}
+  `;
+
+  div.addEventListener('dragstart', e => { dragCard = card.id; div.classList.add('dragging'); });
+  div.addEventListener('dragend',   () => { div.classList.remove('dragging'); dragCard = null; });
+  div.addEventListener('click', e => {
+    if (dragCard) return;
+    openDetail(card.id);
+  });
+
+  return div;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+
+function render() {
+  const cols = ['backlog','todo','progress','done'];
+  cols.forEach(col => {
+    const el = document.getElementById('col-' + col);
+    el.innerHTML = '';
+    const colCards = cards.filter(c => c.col === col);
+    colCards.forEach(card => {
+      const el2 = makeCard(card);
+      if (activeFilter !== 'all' && card.tag !== activeFilter) el2.classList.add('hidden');
+      el.appendChild(el2);
+    });
+    const visible = colCards.filter(c => activeFilter === 'all' || c.tag === activeFilter).length;
+    document.getElementById('count-' + col).textContent = visible;
+  });
+  document.getElementById('total-count').textContent = cards.length;
+  applySearch();
+}
+
+// ── Drag & drop ───────────────────────────────────────────────────────────────
+
+const COL_LABELS = { backlog:'Backlog', todo:'To Do', progress:'In Progress', done:'Done' };
+
+document.querySelectorAll('.col-cards').forEach(zone => {
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', () => {
+    zone.classList.remove('drag-over');
+    if (!dragCard) return;
+    const newCol = zone.dataset.col;
+    const card = cards.find(c => c.id === dragCard);
+    if (card && card.col !== newCol) {
+      const from = COL_LABELS[card.col] || card.col;
+      card.col = newCol;
+      saveState();
+      render();
+      showToast(`Moved to ${COL_LABELS[newCol]} · saved`);
+    }
+  });
+});
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+
+document.getElementById('filterBar').addEventListener('click', e => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  activeFilter = chip.dataset.filter;
+  render();
+});
+
+// ── Search ────────────────────────────────────────────────────────────────────
+
+function applySearch() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.card').forEach(el => {
+    if (el.classList.contains('hidden')) return;
+    const title = el.querySelector('.card-title').textContent.toLowerCase();
+    el.style.display = (!q || title.includes(q)) ? '' : 'none';
+  });
+}
+
+document.getElementById('searchInput').addEventListener('input', applySearch);
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+
+function openModal(col) {
+  modalCol = col;
+  document.getElementById('modal').classList.add('visible');
+  document.getElementById('newTitle').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('visible');
+  document.getElementById('newTitle').value = '';
+  document.getElementById('newMonth').value = '';
+}
+
+function saveCard() {
+  const title = document.getElementById('newTitle').value.trim();
+  if (!title) return;
+  const card = {
+    id:       'u' + Date.now(),
+    col:      modalCol,
+    tag:      document.getElementById('newTag').value,
+    title,
+    priority: document.getElementById('newPriority').value,
+    month:    document.getElementById('newMonth').value || 'TBD',
+    notes:    [],
+    delay:    0,
+  };
+  cards.push(card);
+  saveState();
+  closeModal();
+  render();
+  showToast('Task added · saved');
+}
+
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// ── Detail panel ──────────────────────────────────────────────────────────────
+
+const COL_COLORS = {
+  backlog:  { color: '#7a8499', bg: 'rgba(122,132,153,0.12)' },
+  todo:     { color: '#7b8ff5', bg: 'rgba(123,143,245,0.12)' },
+  progress: { color: '#f5a623', bg: 'rgba(245,166,35,0.12)' },
+  done:     { color: '#4fc3a1', bg: 'rgba(79,195,161,0.12)' },
+};
+
+function openDetail(cardId) {
+  activeDetailId = cardId;
+  renderDetail();
+  document.getElementById('detailOverlay').classList.add('visible');
+  setTimeout(() => document.getElementById('noteInput').focus(), 220);
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('visible');
+  activeDetailId = null;
+  document.getElementById('noteInput').value = '';
+}
+
+function renderDetail() {
+  const card = cards.find(c => c.id === activeDetailId);
+  if (!card) return;
+  const tag = TAG_META[card.tag] || TAG_META.docs;
+  const colMeta = COL_COLORS[card.col] || COL_COLORS.backlog;
+
+  document.getElementById('detailTag').textContent = tag.label;
+  document.getElementById('detailTag').style.color = tag.color;
+  document.getElementById('detailTag').style.background = tag.bg;
+  document.getElementById('detailTitle').textContent = card.title;
+
+  const pri = document.getElementById('detailPriority');
+  pri.textContent = card.priority;
+  pri.className = `card-priority priority-${card.priority}`;
+
+  document.getElementById('detailMonth').textContent = card.month;
+
+  const badge = document.getElementById('detailColBadge');
+  badge.textContent = COL_LABELS[card.col] || card.col;
+  badge.style.color = colMeta.color;
+  badge.style.background = colMeta.bg;
+  badge.style.borderColor = colMeta.color + '44';
+
+  const list = document.getElementById('notesList');
+  list.innerHTML = '';
+  const notes = card.notes || [];
+
+  if (notes.length === 0) {
+    list.innerHTML = '<div class="notes-empty">No notes yet — add one below.</div>';
+  } else {
+    // Show newest first
+    [...notes].reverse().forEach((note, idx) => {
+      const realIdx = notes.length - 1 - idx;
+      const entry = document.createElement('div');
+      entry.className = 'note-entry';
+      entry.style.animationDelay = (idx * 0.04) + 's';
+
+      const noteMeta = COL_COLORS[note.col] || COL_COLORS.backlog;
+      entry.innerHTML = `
+        <div class="note-meta">
+          <span class="note-timestamp">${note.timestamp}</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="note-col-tag" style="color:${noteMeta.color};background:${noteMeta.bg};border:1px solid ${noteMeta.color}44">${COL_LABELS[note.col] || note.col}</span>
+            <button class="note-delete" title="Delete note" onclick="deleteNote('${card.id}', ${realIdx})">✕</button>
+          </div>
+        </div>
+        <div class="note-text">${escapeHtml(note.text)}</div>
+      `;
+      list.appendChild(entry);
+    });
+  }
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function submitNote() {
+  const input = document.getElementById('noteInput');
+  const text = input.value.trim();
+  if (!text || !activeDetailId) return;
+
+  const card = cards.find(c => c.id === activeDetailId);
+  if (!card) return;
+  if (!card.notes) card.notes = [];
+
+  const now = new Date();
+  const ts = now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+    + ' · ' + now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+  card.notes.push({ text, col: card.col, timestamp: ts });
+  input.value = '';
+  saveState();
+  renderDetail();
+  render();
+  showToast('Note saved');
+}
+
+function deleteNote(cardId, noteIdx) {
+  const card = cards.find(c => c.id === cardId);
+  if (!card || !card.notes) return;
+  card.notes.splice(noteIdx, 1);
+  saveState();
+  renderDetail();
+  render();
+  showToast('Note removed');
+}
+
+// Keyboard: Cmd/Ctrl+Enter to submit note, Escape to close
+document.getElementById('noteInput').addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); submitNote(); }
+});
+
+document.getElementById('detailOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('detailOverlay')) closeDetail();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('detailOverlay').classList.contains('visible')) closeDetail();
+    else closeModal();
+  }
+});
+
+// ── Reset button (header) ─────────────────────────────────────────────────────
+
+(function addResetBtn() {
+  const btn = document.createElement('button');
+  btn.textContent = 'Reset Board';
+  btn.title = 'Clear all saved changes and restore defaults';
+  btn.style.cssText = `
+    background:transparent; border:1px solid #2a3347; border-radius:8px;
+    color:#4a5568; font-family:'DM Mono',monospace; font-size:0.68rem;
+    letter-spacing:0.06em; padding:5px 12px; cursor:pointer;
+    transition:all 0.15s;
+  `;
+  btn.onmouseenter = () => { btn.style.borderColor='#e05c6b'; btn.style.color='#e05c6b'; };
+  btn.onmouseleave = () => { btn.style.borderColor='#2a3347'; btn.style.color='#4a5568'; };
+  btn.onclick = () => {
+    if (!confirm('Reset the board to its original state? All moves will be lost.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    cards = DEFAULT_CARDS.map(c => ({ ...c }));
+    cards.forEach((c, i) => { c.delay = (i % 10) * 0.04; });
+    render();
+    showToast('Board reset to defaults');
+  };
+  document.querySelector('.header-right').prepend(btn);
+})();
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+render();
+</script>
+</body>
+</html>
