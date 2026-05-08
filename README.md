@@ -107,8 +107,8 @@ To deploy your own copy:
 
 This board was developed in May 2026 as part of a strategic planning conversation between the Ed Veal the Library Systems Manager and Spencer Smith the Library Director at McKinney Public Library. It is based on the **Library Systems Leadership – First 6 Months** roadmap and covers the period from onboarding through the opening of the Roy and Helen Hall Memorial Library. 
 
-This is intended to expand and grow over time. 
-
+This is intended to expand and grow over time.
+This project reflects a collaboration between AI-assisted generation and human expertise, leveraging AI to support development, creativity, and efficiency while maintaining human oversight and decision-making through a Human-Centered AI framework focused on quality, context, transparency, and responsible use.
 
 ---
 
